@@ -22,8 +22,7 @@ def basic_preprocessing(portfolio, profile, transcript):
     profile = process_profile(profile)
     transcript = process_transcript(transcript)
 
-    # Join them all
-    data = None
+    data = join_data(transcript, profile, portfolio, static=False)
 
     return data, portfolio
 
@@ -48,6 +47,7 @@ def process_profile(profile):
 
 def process_transcript(transcript):
     """ All the preprocessing needed for transcript alone. """
+    return unwrap_transcript(transcript)
 
 
 def channels_ohe(portfolio):
@@ -97,3 +97,35 @@ def member_epoch_days(profile):
     profile['member_epoch_days'] = (
             profile.became_member_on - dt.datetime(1970, 1, 1)).dt.days
     return profile
+
+
+def unwrap_transcript(transcript):
+    """ Reads the 'value' dictionaries and adds the values as columns. """
+    values_df = pd.DataFrame(transcript.value.tolist())
+    values_df.offer_id.update(values_df['offer id'])
+    values_df = values_df.drop('offer id', axis=1)
+
+    return transcript.join(values_df).drop('value', axis=1)
+
+
+def join_data(transcript, profile, portfolio, static=True):
+    """
+    Joins the three sources of data in one dataframe.
+    Args:
+        transcript(pandas dataframe): Contains the events (part of the raw
+            data)
+        profile(pandas dataframe): Contains the customer's profiles (part of
+            the raw data)
+        portfolio(pandas dataframe): Contains the offers (part of the raw data)
+        static(boolean): If True, remove the customer and offer ids. Otherwise
+            keep them for a possible time-dependent analysis.
+    """
+    merged_df = transcript.merge(profile, left_on='person', right_on='id',
+                                 how='left').drop('id', axis=1)
+    merged_df = merged_df.merge(
+        portfolio.rename(columns={'reward': 'reward_t'}),
+        left_on='offer_id', right_on='id', how='left').drop('id', axis=1)
+    if static:
+        merged_df = merged_df.drop(['person', 'offer_id'], axis=1)
+
+    return merged_df
