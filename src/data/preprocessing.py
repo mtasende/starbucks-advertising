@@ -13,8 +13,7 @@ FUTURE_INFO = ['finish', 'success', 'view_time', 'viewed', 'actual_reward',
 
 def basic_preprocessing(portfolio, profile, transcript):
     """
-    Perform a basic preprocessing. It encodes some features, and fills missing
-    data.
+    Perform a basic preprocessing.
 
     Args:
         portfolio(pd.DataFrame): Raw data with the offers information.
@@ -47,7 +46,6 @@ def process_profile(profile):
     profile.became_member_on = pd.to_datetime(profile.became_member_on,
                                               format='%Y%m%d')
     profile['missing_demographics'] = profile.isnull().any(axis=1).astype(int)
-    profile = gender_encode(profile)
     profile = member_epoch_days(profile)
 
     return profile
@@ -79,22 +77,6 @@ def channels_ohe(portfolio):
     portfolio = portfolio.drop('channels', axis=1)
 
     return portfolio
-
-
-def gender_encode(data):
-    """ Encode the gender column. F=0, M=1, O=2. """
-    gender_dict = {'F': 0, 'M': 1, 'O': 2, None: np.nan}
-    data.gender = data.gender.replace(gender_dict)
-
-    return data
-
-
-def gender_decode(data):
-    """ Decode the gender column. F=0, M=1, O=2. """
-    gender_dict_inverse = {0: 'F', 1: 'M', 2: 'O', np.nan: None}
-    data.gender = data.gender.replace(gender_dict_inverse)
-
-    return data
 
 
 def member_epoch_days(profile):
@@ -310,10 +292,37 @@ class BasicEncoder(BaseEstimator, TransformerMixin):
         self.offer_type_encoder = LabelEncoder()
 
     def fit(self, X, y=None):
+        """ Get the encodings for the offer types. """
         self.offer_type_encoder.fit(X['offer_type'])
         return self
 
     def transform(self, X):
+        """ Encode offer types and gender """
         res = X.copy()
         res['offer_type'] = self.offer_type_encoder.transform(X['offer_type'])
+        res = gender_encode(res)
         return res
+
+    def inverse_transform(self, X):
+        """ Transform back to the original encoding. """
+        res = X.copy()
+        res['offer_type'] = self.offer_type_encoder.inverse_transform(
+            X['offer_type'])
+        res = gender_decode(res)
+        return res
+
+
+def gender_encode(data):
+    """ Encode the gender column. F=0, M=1, O=2. """
+    gender_dict = {'F': 0, 'M': 1, 'O': 2, None: np.nan}
+    data.gender = data.gender.replace(gender_dict)
+
+    return data
+
+
+def gender_decode(data):
+    """ Decode the gender column. F=0, M=1, O=2. """
+    gender_dict_inverse = {0: 'F', 1: 'M', 2: 'O', np.nan: None}
+    data.gender = data.gender.replace(gender_dict_inverse)
+
+    return data

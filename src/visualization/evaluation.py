@@ -4,6 +4,7 @@ from sklearn.metrics import confusion_matrix, classification_report, f1_score
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
+from xgboost import plot_importance
 
 
 def evaluate_model(model, X_train, X_test, y_train, y_test):
@@ -60,8 +61,13 @@ def show_feat_importances(model, X_train):
     pipeline is 'estimator'.
     """
     feat_imp = np.vstack([X_train.columns,
-                      model.named_steps['estimator'].feature_importances_]).T
+                          model.named_steps[
+                              'estimator'].feature_importances_]).T
     feat_imp = pd.DataFrame(feat_imp, columns=['feature', 'importance'])
     feat_imp = feat_imp.sort_values(by='importance').set_index('feature')
     feat_imp.plot(kind='barh')
     plt.title('Feature Importances')
+
+    # Use built-in importance plot
+    plt.figure()
+    plot_importance(model.named_steps['estimator'])
