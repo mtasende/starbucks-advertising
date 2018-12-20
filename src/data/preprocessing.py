@@ -1,3 +1,5 @@
+""" The first functions to apply to the raw datasets. """
+
 import numpy as np
 import pandas as pd
 import datetime as dt
@@ -125,6 +127,8 @@ def join_data(transcript, profile, portfolio, static=True):
         portfolio(pandas dataframe): Contains the offers (part of the raw data)
         static(boolean): If True, remove the customer and offer ids. Otherwise
             keep them for a possible time-dependent analysis.
+    Returns:
+        merged_df(pd.DataFrame): The joined dataframe.
     """
     merged_df = transcript.merge(profile, left_on='person', right_on='id',
                                  how='left').drop('id', axis=1)
@@ -240,7 +244,7 @@ def fill_profits(data, transactions):
     Checks if the offer was viewed in the active period of the offers.
     Args:
         data(pd.DataFrame): As returned from fill_completed
-        viewed(pd.DataFrame): As returned from split_transcript
+        transactions(pd.DataFrame): As returned from split_transcript
 
     Returns:
         pd.DataFrame: The received dataframe with some new columns.
