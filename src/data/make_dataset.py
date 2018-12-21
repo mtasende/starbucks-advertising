@@ -1,5 +1,6 @@
 import logging
 import os
+import pickle
 import pandas as pd
 import src.data.preprocessing as pp
 import src.data.success_dataset as sd
@@ -26,13 +27,14 @@ def main():
     data, portfolio = pp.basic_preprocessing(portfolio, profile, transcript)
 
     # Generate the static dataset, and save it
-    logger.info('Generating the static dataset.')
+    logger.info('Generating the static dataset. ' +
+                'This may take several minutes...')
     static_dataset_path = os.path.join(DATA_INTERIM, 'static_data.pkl')
     static_data = pp.generate_static_dataset(data)
     static_data.to_pickle(static_dataset_path)
 
     # Create the offer-success datasets and save them
-    logger.info('Creating the offer-success basic datsets.')
+    logger.info('Creating the offer-success basic datsets...')
     X_train_sd, \
     X_test_sd, \
     y_train_sd, \
@@ -42,7 +44,11 @@ def main():
     X_test_sd.to_pickle(os.path.join(DATA_PROCESSED, 'X_test_success.pkl'))
     y_train_sd.to_pickle(os.path.join(DATA_PROCESSED, 'y_train_success.pkl'))
     y_test_sd.to_pickle(os.path.join(DATA_PROCESSED, 'y_test_success.pkl'))
-    encoder_sd.to_pickle(os.path.join(DATA_PROCESSED, 'encoder_success.pkl'))
+    with open(os.path.join(DATA_PROCESSED,
+                           'encoder_success.pkl'), 'wb') as file:
+        pickle.dump(encoder_sd, file)
+
+    logger.info('All the datasets were created successfully!')
 
 
 
