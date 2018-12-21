@@ -293,28 +293,39 @@ class BasicEncoder(BaseEstimator, TransformerMixin):
 
     def fit(self, X, y=None):
         """ Get the encodings for the offer types. """
-        self.offer_type_encoder.fit(X['offer_type'])
+        self.offer_type_encoder.fit(X['offer_type'].dropna())
         return self
 
     def transform(self, X):
         """ Encode offer types and gender """
         res = X.copy()
-        res['offer_type'] = self.offer_type_encoder.transform(X['offer_type'])
+
+        # Ignore the missing offer types and encode
+        sub_res = res.dropna(subset=['offer_type']).copy()
+        sub_res.offer_type = self.offer_type_encoder.transform(
+            sub_res.offer_type)
+        res.update(sub_res)
+
         res = gender_encode(res)
         return res
 
     def inverse_transform(self, X):
         """ Transform back to the original encoding. """
         res = X.copy()
-        res['offer_type'] = self.offer_type_encoder.inverse_transform(
-            X['offer_type'])
+
+        # Ignore the missing offer types and decode
+        sub_res = res.dropna(subset=['offer_type']).copy()
+        sub_res['offer_type'] = self.offer_type_encoder.inverse_transform(
+            sub_res['offer_type'])
+        res.update(sub_res)
+
         res = gender_decode(res)
         return res
 
 
 def gender_encode(data):
     """ Encode the gender column. F=0, M=1, O=2. """
-    gender_dict = {'F': 0, 'M': 1, 'O': 2, None: np.nan}
+    gender_dict = {'F': 0, 'M': 1, 'O': 2, None: np.nan, np.nan: np.nan}
     data.gender = data.gender.replace(gender_dict)
 
     return data
