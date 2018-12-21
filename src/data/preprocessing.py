@@ -257,7 +257,7 @@ def fill_profits(data, transactions):
                       how='left')
 
 
-def generate_static_dataset(person_data):
+def generate_static_person_data(person_data):
     """
     Generates a dataset for one person, that contains a row for each sent
     offer, and adds some 'results' columns, like whether the offer was viewed,
@@ -275,6 +275,13 @@ def generate_static_dataset(person_data):
     data = fill_profits(data, transactions)
 
     return data.drop(['event', 'reward', 'amount'], axis=1)
+
+
+def generate_static_dataset(data):
+    """
+    Applies the generate_static_person_data to all the users.
+    """
+    return data.groupby('person').apply(generate_static_person_data)
 
 
 def anonimize_data(data):
