@@ -312,6 +312,7 @@ class BasicEncoder(BaseEstimator, TransformerMixin):
         sub_res.offer_type = self.offer_type_encoder.transform(
             sub_res.offer_type)
         res.update(sub_res)
+        res.offer_type = pd.to_numeric(res.offer_type)
 
         res = gender_encode(res)
         return res
