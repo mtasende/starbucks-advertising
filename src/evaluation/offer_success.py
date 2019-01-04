@@ -100,7 +100,7 @@ def random_kfold_validation(model, n_splits=3):
     print('Validation F1-score: {} +- {}'.format(np.mean(f1_val),
                                                  2 * np.std(f1_val)))
 
-def random_1fold_validation(model):
+def random_1fold_validation(model, **kwargs):
     """
     Shows some training and validation results, for a random train-val-test
     validation scheme.
@@ -108,7 +108,7 @@ def random_1fold_validation(model):
         model(sklearn.BaseEstimator): The model to fit and make predictions.
     """
     X_train_val, X_test, y_train_val, y_test, encoder = sd.get_success_data(
-        drop_time=True)
+        drop_time=True, **kwargs)
     X_train, X_val, y_train, y_val = train_test_split(X_train_val,
                                                       y_train_val,
                                                       test_size=0.3,
@@ -120,7 +120,7 @@ def random_1fold_validation(model):
     print('Validation F1-score: {}'.format(f1_score(y_val, y_val_pred)))
 
 
-def random_1fold_cust_validation(model):
+def random_1fold_cust_validation(model, **kwargs):
     """
     Shows some training and validation results, for a random train-val-test
     validation scheme. The dataset is divided by customers.
@@ -128,7 +128,7 @@ def random_1fold_cust_validation(model):
         model(sklearn.BaseEstimator): The model to fit and make predictions.
     """
     X_train_val, X_test, y_train_val, y_test, encoder = sd.get_success_data(
-        drop_time=True, anon=False)
+        drop_time=True, anon=False, **kwargs)
 
     # Get random customer splits
     val_size = 0.3
@@ -152,13 +152,13 @@ def random_1fold_cust_validation(model):
     print('Validation F1-score: {}'.format(f1_score(y_val, y_val_pred)))
 
 
-def offer_success_test(model):
+def offer_success_test(model, **kwargs):
     """
     Shows some training and test results, for a time-split validation scheme.
     Args:
         model(sklearn.BaseEstimator): The model to fit and make predictions.
     """
-    X_train, X_test, y_train, y_test, encoder = sd.get_success_data()
+    X_train, X_test, y_train, y_test, encoder = sd.get_success_data(**kwargs)
     model, y_train_pred, y_test_pred = evaluate_model(
         model, X_train, X_test, y_train, y_test)
     print('Training F1-score: {}'.format(f1_score(y_train, y_train_pred)))

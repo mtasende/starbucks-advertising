@@ -31,6 +31,8 @@ def get_success_data(
             informational offer should be considered as a success.
         drop_time(boolean): Whether to drop the absolute time dependent
             features.
+        anon(boolean): Whether to drop unique identifiers to customers and
+            offers.
 
 
     Returns:

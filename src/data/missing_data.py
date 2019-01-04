@@ -2,6 +2,7 @@
 from sklearn.base import BaseEstimator, TransformerMixin
 from xgboost import XGBClassifier, XGBRegressor
 import pandas as pd
+import numpy as np
 
 
 MEMBER_DATE_FEATS = ['member_epoch_days', 'member_day', 'member_month',
@@ -11,26 +12,38 @@ MEMBER_DATE_FEATS = ['member_epoch_days', 'member_day', 'member_month',
 class BasicImputer(BaseEstimator, TransformerMixin):
     """
     Fills the demographics missing data with medians and most frequent values.
+    Args:
+        fill_mode(list(str)): The names of the columns to fill missing data with
+        the most frequent value.
     """
 
-    def __init__(self):
+    def __init__(self, fill_mode=None):
         super(BaseEstimator, self).__init__()
         self.age_value = None
         self.income_value = None
         self.gender_value = None
+        if fill_mode is None:
+            self.fill_mode = list()
+        else:
+            self.fill_mode = fill_mode
+        self.modes = dict()
 
     def fit(self, X, y=None):
         """ Get some medians. """
-        self.age_value = X.age.median().round()
+        self.age_value = np.round(X.age.median())
         self.income_value = X.income.median()
         self.gender_value = X.gender.mode().values[0]
+
+        self.modes = {col: X[col].mode().values[0] for col in self.fill_mode}
         return self
 
     def transform(self, X):
         """ Encode offer types and gender """
-        return X.fillna({'age': self.age_value,
+        basic_filling = {'age': self.age_value,
                          'income': self.income_value,
-                         'gender': self.gender_value})
+                         'gender': self.gender_value}
+        filling = {**basic_filling, **self.modes}
+        return X.fillna(filling)
 
 
 def add_date_features(data):
