@@ -11,17 +11,18 @@ def show_feat_importances(model, X_train):
     The model is assumed to be a pipeline and the estimator name within the
     pipeline is 'estimator'.
     """
+    n_feats = 20
     feat_imp = np.vstack([X_train.columns,
                           model.named_steps[
                               'estimator'].feature_importances_]).T
     feat_imp = pd.DataFrame(feat_imp, columns=['feature', 'importance'])
     feat_imp = feat_imp.sort_values(by='importance').set_index('feature')
-    feat_imp.plot(kind='barh')
+    feat_imp.iloc[-n_feats:].plot(kind='barh')
     plt.title('Feature Importances')
 
     # Use built-in importance plot
     plt.figure()
-    plot_importance(model.named_steps['estimator'])
+    plot_importance(model.named_steps['estimator'], max_num_features=n_feats)
 
 
 def add_bar_labels(values):
