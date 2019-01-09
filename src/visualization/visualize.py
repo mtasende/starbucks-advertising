@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from xgboost import plot_importance
+from sklearn.decomposition import PCA
 
 
 def show_feat_importances(model, X_train):
@@ -55,3 +56,24 @@ def show_imputer_results(data, filled,
         counts2.plot(kind='bar')
         plt.title('{} filled'.format(feat))
         add_bar_labels(counts2)
+
+
+def pca_visualize(X, **kwargs):
+    """ Applies PCA to get 2-D data and make a scatter plot."""
+    extractor = PCA(n_components=2)
+    X_pca = extractor.fit_transform(X)
+
+    print('Explained variance ratio for the first two components: {}'.format(
+        extractor.explained_variance_ratio_.sum()))
+
+    plt.scatter(X_pca[:, 0], X_pca[:, 1], **kwargs)
+    plt.title('PCA scatter plot')
+    plt.xlabel('PCA 1')
+    _ = plt.ylabel('PCA 2')
+
+
+def pca_visualize_clusters(X, cluster):
+    """ Visualize all the clusters using PCA. """
+    for c in np.unique(cluster):
+        pca_visualize(X[cluster == c], label='cluster {}'.format(c))
+    plt.legend()
