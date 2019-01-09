@@ -223,7 +223,14 @@ def fill_viewed(data, viewed):
 
 def fill_profits(data, transactions):
     """
-    Checks if the offer was viewed in the active period of the offers.
+    Fills "spending" and "profits" related columns.
+    The "spending" columns track the transactions of the client in the "active"
+    period of an offer, and adds them. They are also summed in the period between the
+    offer reception and the offer completion (if it is completed).
+    The profits columns consider the paid rewards as a cost to the company and substract
+    them.
+    The paid reward is also recorded in the column "actual reward" (it is zero if the
+    offer was not completed).
     Args:
         data(pd.DataFrame): As returned from fill_completed
         transactions(pd.DataFrame): As returned from split_transcript
@@ -281,7 +288,7 @@ def generate_static_dataset(data):
     """
     Applies the generate_static_person_data to all the users.
     """
-    return data.groupby('person').apply(generate_static_person_data)
+    return data.groupby('person').apply(generate_static_person_data).reset_index(drop=True)
 
 
 def anonimize_data(data):

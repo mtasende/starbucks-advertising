@@ -14,7 +14,8 @@ class BasicImputer(BaseEstimator, TransformerMixin):
     Fills the demographics missing data with medians and most frequent values.
     Args:
         fill_mode(list(str)): The names of the columns to fill missing data with
-        the most frequent value.
+        the most frequent value (other than gender value). This is used if new features
+        are added to the dataset, that have missing data.
     """
 
     def __init__(self, fill_mode=None):
