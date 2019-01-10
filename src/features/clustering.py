@@ -63,3 +63,11 @@ def validate_clustering(X, clustering_algo, params, index_fun, n_clust_name):
         plt.vlines(best_silhouette_params[n_clust_name], min(error), max(error), 'r')
 
     return silhouette, error, best_silhouette_params
+
+
+def gmm_aic(X, method, cluster_labels):
+    """
+    Index function that returns the Aikake Information Criterion Index for a
+    Gaussian Mixture Model.
+    """
+    return method.aic(X)
