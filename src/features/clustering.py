@@ -71,3 +71,8 @@ def gmm_aic(X, method, cluster_labels):
     Gaussian Mixture Model.
     """
     return method.aic(X)
+
+
+def number_of_clusters(X, method, cluster_labels):
+    """ Index function that returns the number of clusters for DBSCAN. """
+    return len(method.labels_)

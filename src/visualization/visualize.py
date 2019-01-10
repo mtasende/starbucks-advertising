@@ -4,6 +4,10 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from xgboost import plot_importance
 from sklearn.decomposition import PCA
+from plotly.offline import init_notebook_mode, iplot
+import plotly.graph_objs as go
+
+init_notebook_mode(connected=True)
 
 
 def show_feat_importances(model, X_train):
@@ -77,3 +81,37 @@ def pca_visualize_clusters(X, cluster):
     for c in np.unique(cluster):
         pca_visualize(X[cluster == c], label='cluster {}'.format(c))
     plt.legend()
+
+
+def visualize_3d_clusters(X, labels):
+    data = list()
+    for label in np.unique(labels):
+        X_sub = X[labels == label]
+        trace = go.Scatter3d(
+            x=X_sub.age,
+            y=X_sub.income,
+            z=X_sub.member_epoch_days,
+            mode='markers',
+            marker=dict(
+                size=2,
+                opacity=1.0
+            ),
+            name='cluster {}'.format(label)
+        )
+        data.append(trace)
+
+    layout = go.Layout(
+        margin=dict(
+            l=0,
+            r=0,
+            b=0,
+            t=0
+        ),
+        scene=dict(
+            xaxis=dict(title='Age'),
+            yaxis=dict(title='Income'),
+            zaxis=dict(title='Mambership days since epoch')
+        )
+    )
+    fig = go.Figure(data=data, layout=layout)
+    iplot(fig)
