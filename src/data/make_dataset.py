@@ -19,7 +19,7 @@ def main():
                              orient='records', lines=True)
     profile = pd.read_json(os.path.join(DATA_RAW, 'profile.json'),
                            orient='records', lines=True)
-    transcript = pd.read_json(os.path.join(DATA_RAW, 'transcript.json'),
+    transcript   = pd.read_json(os.path.join(DATA_RAW, 'transcript.json'),
                               orient='records', lines=True)
 
     # Initial preprocessing
