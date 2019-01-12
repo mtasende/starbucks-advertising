@@ -40,7 +40,7 @@ def get_success_data(
         X_test(pd.DataFrame): The test dataset.
         y_train(pd.Series): The training target.
         y_test(pd.Series): The test target.
-        BasicEncoder: An encoder to use in a ML pipeline.
+        BasicEncoder: An encoder to use in an ML pipeline.
     """
 
     data = pd.read_pickle(basic_dataset_path)
