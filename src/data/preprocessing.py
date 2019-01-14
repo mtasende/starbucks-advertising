@@ -10,6 +10,8 @@ FUTURE_INFO = ['finish', 'success', 'view_time', 'viewed', 'actual_reward',
                'profit_in_duration', 'profit_until_complete',
                'spent_in_duration', 'spent_until_complete', 'completed']
 
+ABSOLUTE_TIME_DEPENDENT = ['time', 'expected_finish']
+
 
 def basic_preprocessing(portfolio, profile, transcript):
     """
@@ -352,3 +354,9 @@ def gender_decode(data):
     data.gender = data.gender.replace(gender_dict_inverse)
 
     return data
+
+
+def drop_time_dependent(X):
+    """ Drops the features that depend on absolute time."""
+
+    return  X.drop(ABSOLUTE_TIME_DEPENDENT, axis=1)

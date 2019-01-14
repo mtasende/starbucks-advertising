@@ -8,8 +8,6 @@ import os
 import src.data.preprocessing as pp
 from src import DATA_INTERIM
 
-ABSOLUTE_TIME_DEPENDENT = ['time', 'expected_finish']
-
 
 def get_success_data(
         basic_dataset_path=os.path.join(DATA_INTERIM, 'static_data.pkl'),
@@ -60,12 +58,6 @@ def get_success_data(
     return X_train, X_test, y_train, y_test, encoder
 
 
-def drop_time_dependent(X):
-    """ Drops the features that depend on absolute time."""
-
-    return  X.drop(ABSOLUTE_TIME_DEPENDENT, axis=1)
-
-
 def time_split(X, y, time_limit, drop_time=True):
     """
     Splits the features and targets in time. Drops the time dependent features
@@ -78,7 +70,7 @@ def time_split(X, y, time_limit, drop_time=True):
 
     # Drop the columns that depend on absolute time
     if drop_time:
-        X_train = drop_time_dependent(X_train)
-        X_test = drop_time_dependent(X_test)
+        X_train = pp.drop_time_dependent(X_train)
+        X_test = pp.drop_time_dependent(X_test)
 
     return X_train, X_test, y_train, y_test
