@@ -39,7 +39,7 @@ def get_time_split_val(val_time=370, **kwargs):
     y_train_val, \
     y_test, \
     encoder = sd.get_success_data(drop_time=False, **fun_kwargs)
-    X_test = sd.drop_time_dependent(X_test)
+    X_test = pp.drop_time_dependent(X_test)
     X_train, X_val, y_train, y_val = sd.time_split(X_train_val, y_train_val,
                                                    val_time)
     return X_train, X_val, X_test, X_train_val, y_train, y_val, y_test, \

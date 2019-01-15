@@ -57,8 +57,11 @@ def get_offers_ts(user_received, portfolio, data, delta = 24 * 10, viewed=False)
 
 class BasicEncoderProfits(pp.BasicEncoder):
     """
-    Transforms the Basic dataset. Adds the encoding for the offer choice or
-    other custom features (may be offer_id for example). """
+    Transforms the Basic dataset. Adds the possibility of encoding other custom features, like offer_id,
+    for example.
+    Args:
+        custom_features(list): Names of the custom features to label-encode.
+    """
 
     def __init__(self, custom_features=list()):
         super().__init__()
@@ -122,6 +125,13 @@ def fill_null_offer(data):
     Fill the 'null' offer data when an offer was not viewed.
     The 'viewcol' features are generated for the views predictor. That model
     doesn't consider the null offer because it predicts the views themselves.
+    Args:
+        data(dataframe): A dataframe with sent offers (like the result from 'get_spent_days_static').
+
+    Returns:
+        data(dataframe): Like the input but with added / modified columns.
+        view_cols(list): The names of the columns for the 'views' estimator.
+        profit_cols(list): The names of the columns for the 'profits' estimator.
     """
     viewcol_label = 'viewcol'
 
@@ -150,7 +160,12 @@ def split_view_profit(X, view_cols, profit_cols):
     """
     Splits a features dataset in the features that are used by
     the views predictor and the features that are used by the profits
-    predictor
+    predictor.
+    Args:
+        X(dataframe): Input of the estimator. Each sample is a sent offer. Contains 'view' columns and 'profit'
+            columns. Like the result from 'fill_null_offer'.
+        view_cols(list): The names of the columns for the 'views' estimator.
+        profit_cols(list): The names of the columns for the 'profits' estimator.
     """
     X_view = X.drop(profit_cols, axis=1).copy()
     X_view = X_view.rename(columns={v: p for v, p in zip(view_cols, profit_cols)})
@@ -172,19 +187,22 @@ def get_profit_10_days_data(basic_dataset_path=os.path.join(DATA_PROCESSED, 'sta
     The profits are calculated as the money spent minus the paid reward (if any).
     Args:
         basic_dataset_path(str): The path to the pickle containing the basic
-            dataset
-        time_limit(int): The limit to split the train and test sets.
-        drop_time(boolean): Whether to drop the absolute time dependent
-            features.
-        anon_person(boolean): Whether to drop unique identifiers to customers.
-        anon_offer(boolean): Whether to drop unique identifiers to offers.
+            dataset.
+        train_times(list): A list (or tuple) with the time values for the training set.
+        test_times(list): A list (or tuple) with the time values for the test set.
+        drop_time(boolean): Whether to drop or not the absolute time dependent features.
+        anon_person(boolean): Whether to drop or not unique identifiers to customers.
+        drop_offer_id(boolean): Whether to drop or not the 'offer_id' feature.
+        target(str): The target feature name (typically, 'viewed' or 'profit_10_days', or both).
 
     Returns:
         X_train(pd.DataFrame): The training dataset.
         X_test(pd.DataFrame): The test dataset.
         y_train(pd.Series): The training target.
         y_test(pd.Series): The test target.
-        BasicEncoderProfits: An encoder to use in an ML pipeline.
+        encoder(BasicEncoderProfits): An encoder to use in an ML pipeline.
+        view_cols(list): The names of the columns for the 'views' estimator.
+        profit_cols(list): The names of the columns for the 'profits' estimator.
     """
     data = pd.read_pickle(basic_dataset_path)
 
@@ -218,7 +236,17 @@ def get_profit_10_days_data(basic_dataset_path=os.path.join(DATA_PROCESSED, 'sta
 
 
 def predict_profit_with_offer(model, data, offer, drop_offer_id=False):
-    """ Predicts how much will be the profit in 10 days for a given an offer. """
+    """
+    Predicts how much will be the profit in 10 days for a given an offer.
+    Args:
+        model(ProfitsPredictor): The model to estimate the profits in 10 days.
+        data(dataframe): A static dataset, like the result of 'get_profit_10_days_data' (X_train, X_test, ...).
+        offer(pd.Series): One row of the portfolio dataframe.
+        drop_offer_id(boolean): Whether to drop or not the 'offer_id' column.
+
+    Returns:
+        predictions(pd.Series): The predicted profits for the offer and for each sample in 'data'.
+    """
     samples = data.copy()
     if drop_offer_id:
         std_offer = offer.drop('id').rename(index={'reward': 'reward_t'})
@@ -238,8 +266,17 @@ def predict_profit_with_offer(model, data, offer, drop_offer_id=False):
 
 def choose_offer(model, X, portfolio, add_null_offer=True):
     """
-    Given a model and a features dataframe it returns the
-    model that maximizes the model predictions.
+    Given a model and a features dataframe it returns the offers that maximize the model predictions.
+    It calls 'predict_profit_with_offer' for each offer in portfolio, and selects the one with the largest
+    predicted profit.
+    Args:
+        model(ProfitsPredictor): The model to estimate the profits in 10 days.
+        X(dataframe): A static dataset, like the result of 'get_profit_10_days_data' (X_train, X_test, ...).
+        portfolio(dataframe): The processed portfolio dataframe. Like the result from 'pp.basic_preprocessing'.
+        add_null_offer(boolean): Whether to add the null offer (no offer at all) to the portfolio.
+
+    Returns:
+        pd.Series: A series with the offer_id of the selected (best) offer for each sample of X.
     """
     complete_portfolio = portfolio.copy()
 
@@ -259,7 +296,14 @@ def choose_offer(model, X, portfolio, add_null_offer=True):
 
 class ProfitsPredictor(BaseEstimator, RegressorMixin):
     """
-    Predicts the profits in 10 days for any given offer to a specific customer.
+    Predicts the profits in 10 days for any given offer to a specific customer. It uses to models (sklearn Pipelines):
+    A classifier to predict the probability of an offer being viewed, and a regressor to predict the expected profit
+    that a customer will generate in the 10 days following the reception of an offer. Both results are combined to give
+    a total expected profit returns in 10 days, after the reception of an offer.
+    Args:
+        encoder(BasicEncoderProfits): An encoder to use in an ML pipeline.
+        view_cols(list): The names of the columns for the 'views' estimator.
+        profit_cols(list): The names of the columns for the 'profits' estimator.
     """
 
     def __init__(self, encoder=None, view_cols=VIEW_COLS, profit_cols=PROFIT_COLS, **kwargs):
