@@ -98,10 +98,10 @@ def main():
                                                   fill_null=True,
                                                   target=['viewed', 'profit_10_days'],
                                                   drop_offer_id=False)
-    X_train_p10.to_pickle(os.path.join(DATA_PROCESSED, 'X_train_success.pkl'))
-    X_test_p10.to_pickle(os.path.join(DATA_PROCESSED, 'X_test_success.pkl'))
-    y_train_p10.to_pickle(os.path.join(DATA_PROCESSED, 'y_train_success.pkl'))
-    y_test_p10.to_pickle(os.path.join(DATA_PROCESSED, 'y_test_success.pkl'))
+    X_train_p10.to_pickle(os.path.join(DATA_PROCESSED, 'X_train_profits.pkl'))
+    X_test_p10.to_pickle(os.path.join(DATA_PROCESSED, 'X_test_profits.pkl'))
+    y_train_p10.to_pickle(os.path.join(DATA_PROCESSED, 'y_train_profits.pkl'))
+    y_test_p10.to_pickle(os.path.join(DATA_PROCESSED, 'y_test_profits.pkl'))
     with open(os.path.join(DATA_PROCESSED,
                            'encoder_profits.pkl'), 'wb') as file:
         pickle.dump(encoder_p10, file)
