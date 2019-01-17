@@ -193,7 +193,7 @@ def get_profit_10_days_data(basic_dataset_path=os.path.join(DATA_PROCESSED, 'sta
         drop_time(boolean): Whether to drop or not the absolute time dependent features.
         anon_person(boolean): Whether to drop or not unique identifiers to customers.
         drop_offer_id(boolean): Whether to drop or not the 'offer_id' feature.
-        target(str): The target feature name (typically, 'viewed' or 'profit_10_days', or both).
+        target(list or str): The target feature name (typically, 'viewed' or 'profit_10_days', or both).
 
     Returns:
         X_train(pd.DataFrame): The training dataset.
