@@ -8,7 +8,7 @@ import pandas as pd
 import os
 import src.data.preprocessing as pp
 import src.data.missing_data as md
-from src import DATA_PROCESSED
+from src.data import DATA_PROCESSED
 from sklearn.preprocessing import LabelEncoder
 from sklearn.base import BaseEstimator, RegressorMixin
 from sklearn.pipeline import Pipeline

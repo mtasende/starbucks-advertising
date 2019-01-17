@@ -6,7 +6,7 @@ the case of informational offers.
 import pandas as pd
 import os
 import src.data.preprocessing as pp
-from src import DATA_INTERIM
+from src.data import DATA_INTERIM
 
 
 def get_success_data(

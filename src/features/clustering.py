@@ -13,7 +13,7 @@ import os
 
 import src.data.success_dataset as sd
 import src.data.preprocessing as pp
-from src import DATA_INTERIM, DATA_PROCESSED
+from src.data import DATA_INTERIM, DATA_PROCESSED
 
 DIST_12 = 40.61273277762122
 DIST_3D_3 = 99.68755217120427

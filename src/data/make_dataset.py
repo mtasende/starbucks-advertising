@@ -7,7 +7,7 @@ import src.data.success_dataset as sd
 import src.features.clustering as clust
 import src.features.lagged as lag
 import src.data.profit_10_days_dataset as p10
-from src import DATA_RAW, DATA_INTERIM, DATA_PROCESSED
+from src.data import DATA_RAW, DATA_INTERIM, DATA_PROCESSED
 
 
 def main():
@@ -26,6 +26,8 @@ def main():
                 'depending on the computational resources available)')
 
     # Load the raw data
+    print('data raw is here:')
+    print(os.path.join(DATA_RAW, 'portfolio.json'))
     portfolio = pd.read_json(os.path.join(DATA_RAW, 'portfolio.json'),
                              orient='records', lines=True)
     profile = pd.read_json(os.path.join(DATA_RAW, 'profile.json'),
