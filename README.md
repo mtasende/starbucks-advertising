@@ -1,6 +1,8 @@
 # Starbucks Advertising
 Starbucks challenge to select the best offers to show to each user in the cellphone app. This is the Capstone Project for Udacity's Data Scientist Nanodegree.
 
+This project has a [Medium story](https://medium.com/@miguel.tasende/starbucks-offer-optimization-adb323ca32b5) associated.
+
 ## Installations
 The project uses Python 3.
 To install it run:
