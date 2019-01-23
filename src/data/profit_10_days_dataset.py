@@ -235,31 +235,32 @@ def get_profit_10_days_data(basic_dataset_path=os.path.join(DATA_PROCESSED, 'sta
     return X_train, X_test, y_train, y_test, encoder, view_cols, profit_cols
 
 
-def predict_profit_with_offer(model, data, offer, drop_offer_id=False):
+def predict_profit_with_offer(model, data, offer, null_offer, drop_offer_id=False):
     """
     Predicts how much will be the profit in 10 days for a given an offer.
     Args:
         model(ProfitsPredictor): The model to estimate the profits in 10 days.
         data(dataframe): A static dataset, like the result of 'get_profit_10_days_data' (X_train, X_test, ...).
         offer(pd.Series): One row of the portfolio dataframe.
+        null_offer(pd.Series): An offer that represents "no offer at all".
         drop_offer_id(boolean): Whether to drop or not the 'offer_id' column.
 
     Returns:
         predictions(pd.Series): The predicted profits for the offer and for each sample in 'data'.
     """
     samples = data.copy()
+
     if drop_offer_id:
         std_offer = offer.drop('id').rename(index={'reward': 'reward_t'})
     else:
         std_offer = offer.rename(index={'reward': 'reward_t', 'id': 'offer_id'}).sort_index()
     view_offer = std_offer.rename(index={old: '{}_viewcol'.format(old) for old in std_offer.index})
+
+    # Substitute all the offers for the given one
     samples.loc[:, sorted(VIEW_COLS)] = np.repeat(view_offer.values.reshape(1, -1), samples.shape[0], axis=0)
     samples.loc[:, sorted(PROFIT_COLS)] = np.repeat(std_offer.values.reshape(1, -1), samples.shape[0], axis=0)
 
-    if offer.offer_type == 'no_offer':
-        y_pred = model.predict_profit_alone(samples)
-    else:
-        y_pred = model.predict(samples)
+    y_pred = model.predict_final_profits(samples, null_offer.sort_index())
 
     return pd.Series(y_pred, name=offer.id).T
 
@@ -288,7 +289,7 @@ def choose_offer(model, X, portfolio, add_null_offer=True):
         complete_portfolio = complete_portfolio.append(null_offer)
 
     res = complete_portfolio.apply(
-        lambda x: predict_profit_with_offer(model, X, x), axis=1).T
+        lambda x: predict_profit_with_offer(model, X, x, null_offer), axis=1).T
     res.columns = complete_portfolio.id
 
     return res.idxmax(axis=1), res
@@ -342,14 +343,14 @@ class ProfitsPredictor(BaseEstimator, RegressorMixin):
         return self
 
     def predict(self, X):
-        """ Gets the predictions from all models and calculates the final prediction."""
+        """ Gets the predictions from all models and returns them."""
         X_views, X_profits = split_view_profit(X,
                                                self.view_cols,
                                                self.profit_cols)
         vis_probas = self.views_model.predict_proba(X_views)[:, 1]
         profits_pred = self.profits_model.predict(X_profits)
 
-        return vis_probas * profits_pred
+        return np.vstack([vis_probas, profits_pred]).T
 
     def predict_profit_alone(self, X):
         """
@@ -361,3 +362,38 @@ class ProfitsPredictor(BaseEstimator, RegressorMixin):
                                                self.profit_cols)
 
         return self.profits_model.predict(X_profits)
+
+    def predict_final_profits(self, X, null_offer):
+        """
+        Predicts the final estimated profits for each sample. It combines the visualization
+        probabilities with the estimated profits for viewed offers.
+        """
+        X_null = X.copy()
+
+        X_null.loc[:, sorted(VIEW_COLS)] = np.repeat(null_offer.values.reshape(1, -1), X_null.shape[0],
+                                                           axis=0)
+        X_null.loc[:, sorted(PROFIT_COLS)] = np.repeat(null_offer.values.reshape(1, -1), X_null.shape[0],
+                                                             axis=0)
+
+        _, X_null_profits = split_view_profit(X_null,
+                                               self.view_cols,
+                                               self.profit_cols)
+        X_views, X_profits = split_view_profit(X,
+                                               self.view_cols,
+                                               self.profit_cols)
+
+        # Predict the profits with the null offer
+        null_profits_pred = self.profits_model.predict(X_null_profits)
+
+
+        # Predict the probability of view and the profits if viewed
+        vis_probas = self.views_model.predict_proba(X_views)[:, 1]
+        profits_pred = self.profits_model.predict(X_profits)
+
+        # Predict the final profits
+        y_pred = vis_probas * profits_pred + (1 - vis_probas) * null_profits_pred
+
+        # The null offer is "always seen".
+        y_pred[X.offer_type == 'no_offer'] = null_profits_pred[X.offer_type == 'no_offer']
+
+        return y_pred
