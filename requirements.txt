@@ -129,7 +129,6 @@ py==1.7.0
 pycodestyle==2.4.0
 pycosat==0.6.3
 pycparser==2.19
-pycrypto==2.6.1
 pycurl==7.43.0.2
 pyflakes==2.0.0
 Pygments==2.3.1
@@ -147,7 +146,7 @@ pytest-remotedata==0.3.1
 python-dateutil==2.7.5
 pytz==2018.7
 PyWavelets==1.0.1
-PyYAML==3.13
+pyyaml>=4.2b1
 pyzmq==17.1.2
 QtAwesome==0.5.3
 qtconsole==4.4.3
