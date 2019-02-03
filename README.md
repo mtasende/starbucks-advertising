@@ -70,7 +70,7 @@ I chose this project, as the Capstone project for Udacity's Data Scientist Nanod
     └── utils.py           <- Utility functions
 
 
-## How to interact with your project
+## How to interact with the project
 The main notebook is in `notebooks/Starbucks_Capstone_notebook.ipynb`. To reproduce the main results run that notebook. Most users will only want to run this.
 
 In the folder `notebooks/offer_success_experiments` there is one notebook for each experiment that was run to try to predict the probability of "success" (that is, that an offer is viewed and completed) for an offer.
